@@ -1,0 +1,25 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio 15
+VisualStudioVersion = 15.0.28307.106
+MinimumVisualStudioVersion = 10.0.40219.1
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "streamdeck-foldereditor", "streamdeck-foldereditor\streamdeck-foldereditor.csproj", "{C75493B5-0572-48DE-B147-8987B0B7710E}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Any CPU = Debug|Any CPU
+		Release|Any CPU = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{C75493B5-0572-48DE-B147-8987B0B7710E}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{C75493B5-0572-48DE-B147-8987B0B7710E}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{C75493B5-0572-48DE-B147-8987B0B7710E}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{C75493B5-0572-48DE-B147-8987B0B7710E}.Release|Any CPU.Build.0 = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(ExtensibilityGlobals) = postSolution
+		SolutionGuid = {3AA45D89-A34E-4F54-A8C9-003B54688F92}
+	EndGlobalSection
+EndGlobal
