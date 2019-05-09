@@ -17,7 +17,7 @@ Note: If there is already a key in that location, that key will move to the top-
 5. If said it's successful, completely shut down the Stream Deck app and restart it to see the change.
 
 ## Download
-Download the app from here: https://github.com/BarRaider/streamdeck-foldereditor/releases/download/v1.0/folder_editor_v1.0.zip
+Download the app from here: https://github.com/BarRaider/streamdeck-foldereditor/releases/download/v1.1/folder_editor_v1.1.zip
 
 ## Windows/Mac support
 This app can be compiled on both Windows and Mac. This app has been tested on Stream Deck v4.1.0 on Windows.  
