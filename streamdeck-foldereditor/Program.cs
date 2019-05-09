@@ -4,7 +4,7 @@ namespace streamdeck_foldereditor
 {
     class Program
     {
-        private const string VERSION = "1.0";
+        private const string VERSION = "1.1";
         private static ProfilesExplorer pe = new ProfilesExplorer();
         static void Main(string[] args)
         {
@@ -114,7 +114,7 @@ namespace streamdeck_foldereditor
             Console.WriteLine($"Moving the back location for the folder in location: {folderLocation}");
             Console.WriteLine("Choose where you would like the Back button to move to. If that position is already used, it will be moved to the Top-Left (0,0) position\r\n");
             Console.Write("Enter the Column to put the back folder on [0-4]:");
-            int? col = SanitizeNumericInput(2);
+            int? col = SanitizeNumericInput(4);
 
             if (col == null || !col.HasValue)
             {
