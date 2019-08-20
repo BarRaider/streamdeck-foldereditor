@@ -1,11 +1,12 @@
 ﻿using System;
+using System.Linq;
 
 namespace streamdeck_foldereditor
 {
     class Program
     {
-        private const string VERSION = "1.1";
-        private static ProfilesExplorer pe = new ProfilesExplorer();
+        private const string VERSION = "1.2";
+        private static readonly ProfilesExplorer pe = new ProfilesExplorer();
         static void Main(string[] args)
         {
             try
@@ -37,7 +38,7 @@ namespace streamdeck_foldereditor
             int? profileNum;
             int idx = 1;
             
-            var profiles = pe.GetProfiles();
+            var profiles = pe.GetProfiles().OrderBy(p => p.Name).ToList();
 
             if (profiles == null || profiles.Count == 0)
             {
@@ -73,7 +74,8 @@ namespace streamdeck_foldereditor
                 return null;
             }
 
-            DisplayKeyLayout();
+            var streamDeckType = SDUtil.GetStreamDeckTypeFromProfile(profileInfo);
+            SDUtil.DisplayKeyLayout(streamDeckType);
 
             Console.WriteLine("\r\nFolders in profile:");
             foreach (var location in folders)
@@ -82,7 +84,7 @@ namespace streamdeck_foldereditor
                 idx++;
             }
 
-            Console.WriteLine("The key location is the physical location of the folder on the Stream Deck.\r\nSo 0,0 is the top left key and 4,2 is the bottom right key. Only actual folders are shown above.");
+            Console.WriteLine("The key location is the physical location of the folder on the Stream Deck.\r\nSo 0,0 is the top left key. Only actual folders are shown above.");
             Console.Write("Enter the number (NUMBER in the square brackets NOT the location) of the folder to edit: ");
 
             folderNum = SanitizeNumericInput(idx - 1);
@@ -93,36 +95,26 @@ namespace streamdeck_foldereditor
 
             return folders[folderNum.Value - 1];
         }
-
-        private static void DisplayKeyLayout()
-        {
-            Console.WriteLine("---------- STREAM DECK LAYOUT ----------");
-            for (int idx = 0; idx < 3; idx++)
-            {
-                for (int idx2 = 0; idx2 < 5; idx2++)
-                {
-                    Console.Write($"[{idx2},{idx}]  ");
-                }
-                Console.WriteLine("");
-            }
-            Console.WriteLine("----------------------------------------");
-        }
-
+                
         private static void ReAssignFolderBack(ProfileInfo profileInfo, String folderLocation)
         {
-            DisplayKeyLayout();
+            var streamDeckType = SDUtil.GetStreamDeckTypeFromProfile(profileInfo);
+            SDUtil.DisplayKeyLayout(streamDeckType);
+            int maxCols = SDUtil.GetColumnsForStreamDeckType(streamDeckType);
+            int maxRows = SDUtil.GetRowsForStreamDeckType(streamDeckType);
+
             Console.WriteLine($"Moving the back location for the folder in location: {folderLocation}");
             Console.WriteLine("Choose where you would like the Back button to move to. If that position is already used, it will be moved to the Top-Left (0,0) position\r\n");
-            Console.Write("Enter the Column to put the back folder on [0-4]:");
-            int? col = SanitizeNumericInput(4);
+            Console.Write($"Enter the Column to put the back folder on [0-{maxCols - 1}]:");
+            int? col = SanitizeNumericInput(maxCols);
 
             if (col == null || !col.HasValue)
             {
                 return;
             }
 
-            Console.Write("Enter the Row to put the back folder on [0-2]:");
-            int? row = SanitizeNumericInput(2);
+            Console.Write($"Enter the Row to put the back folder on [0-{maxRows - 1}]:");
+            int? row = SanitizeNumericInput(maxRows);
 
             if (row == null || !row.HasValue)
             {
@@ -133,9 +125,8 @@ namespace streamdeck_foldereditor
 
         private static int? SanitizeNumericInput(int maxNum)
         {
-            int numeric;
             string result = Console.ReadLine();
-            if (!Int32.TryParse(result, out numeric))
+            if (!Int32.TryParse(result, out int numeric))
             {
                 Console.WriteLine("Invalid input! Number expected");
                 return null;

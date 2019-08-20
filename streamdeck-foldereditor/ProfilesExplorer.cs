@@ -97,7 +97,7 @@ namespace streamdeck_foldereditor
             if (manifest["Actions"][newLocation] == null) // New location doesn't have an existing key
             {
                 manifest["Actions"][newLocation] = manifest["Actions"]["0,0"];
-                manifest["Actions"]["0,0"].Parent.Remove();
+                manifest["Actions"]["0,0"]?.Parent?.Remove();
             }
             else // Does have an existing key, replace them
             {
