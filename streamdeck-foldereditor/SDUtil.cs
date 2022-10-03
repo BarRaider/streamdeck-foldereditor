@@ -21,6 +21,7 @@ namespace streamdeck_foldereditor
             switch (profileInfo.DeviceModel)
             {
                 case "20GAA9901":
+                case "20GAA9902":
                     return StreamDeckType.Classic;
                 case "20GAT9901":
                     return StreamDeckType.XL;
