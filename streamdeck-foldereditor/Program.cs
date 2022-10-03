@@ -23,7 +23,6 @@ namespace streamdeck_foldereditor
                     return;
                 }
                 ReAssignFolderBack(profileInfo, folderInfo);
-                
 
             }
             catch (Exception ex)
@@ -37,7 +36,7 @@ namespace streamdeck_foldereditor
         {
             int? profileNum;
             int idx = 1;
-            
+
             var profiles = pe.GetProfiles().OrderBy(p => p.Name).ToList();
 
             if (profiles == null || profiles.Count == 0)
@@ -58,7 +57,7 @@ namespace streamdeck_foldereditor
             {
                 return null;
             }
-           
+
             return profiles[profileNum.Value - 1];
         }
 
@@ -84,6 +83,12 @@ namespace streamdeck_foldereditor
                 idx++;
             }
 
+            if (streamDeckType == StreamDeckType.App) {
+                Console.WriteLine("\r\n----------------WARNING-------------------");
+                Console.WriteLine("Stream Deck Model not recognized: {0}", profileInfo.DeviceModel);
+                Console.WriteLine("Application may not function correctly.");
+                Console.WriteLine("----------------WARNING-------------------\r\n");
+            }
             Console.WriteLine("The key location is the physical location of the folder on the Stream Deck.\r\nSo 0,0 is the top left key. Only actual folders are shown above.");
             Console.Write("Enter the number (NUMBER in the square brackets NOT the location) of the folder to edit: ");
 
@@ -95,7 +100,7 @@ namespace streamdeck_foldereditor
 
             return folders[folderNum.Value - 1];
         }
-                
+
         private static void ReAssignFolderBack(ProfileInfo profileInfo, String folderLocation)
         {
             var streamDeckType = SDUtil.GetStreamDeckTypeFromProfile(profileInfo);
