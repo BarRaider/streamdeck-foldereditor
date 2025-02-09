@@ -1,35 +1,49 @@
-﻿using System;
+﻿using streamdeck_foldereditor.Models;
+using System;
+using System.IO;
 using System.Linq;
 
 namespace streamdeck_foldereditor
 {
     class Program
     {
-        private const string VERSION = "1.2";
+        private const string VERSION = "2.0";
         private static readonly ProfilesExplorer pe = new ProfilesExplorer();
         static void Main(string[] args)
         {
             try
             {
-                Console.WriteLine($"Stream Deck 'Folder-Back' Editor v{VERSION} by BarRaider\r\nView my other projects on: https://BarRaider.github.io\r\nDISCLAIMER: This may damage your profiles! Use with caution and under your own risk\r\nTo make sure I stress this enough - this usually works but you MAY loose the profile - make a backup by EXPORTING the profile before running this app...");
+                Console.WriteLine($"Stream Deck 'Folder-Back' Editor v{VERSION} by BarRaider\r\nView my other projects on: https://BarRaider.com\r\n\r\nDISCLAIMER: This may damage your profiles! Use with caution and under your own risk.\r\nTo make sure I stress this enough - this usually works but you MAY loose the profile - make a backup by EXPORTING the profile before running this app...");
+                Console.WriteLine("MAKE SURE YOU'VE QUIT STREAM DECK APP AND IT'S FULLY SHUT DOWN and then Press any key to start...");
+                Console.ReadKey();
                 var profileInfo = GetProfileToEdit();
                 if (profileInfo == null)
                 {
                     return;
                 }
-                var folderInfo = GetFolderLocationToEdit(profileInfo);
-                if (String.IsNullOrWhiteSpace(folderInfo))
+
+                int pageNum = 0;
+                if (profileInfo.Pages.Pages.Count > 1)
+                {
+                    var receivedPageNum = GetRequiredPageNum(profileInfo);
+                    if (receivedPageNum == null || !receivedPageNum.HasValue)
+                    {
+                        Console.WriteLine("A valid page number is required.");
+                    }
+                    pageNum = receivedPageNum.Value;
+                }
+                var folderInfo = GetFolderLocationToEdit(profileInfo, pageNum);
+                if (folderInfo == null || String.IsNullOrWhiteSpace(folderInfo.Item1) || String.IsNullOrWhiteSpace(folderInfo.Item2))
                 {
                     return;
                 }
-                ReAssignFolderBack(profileInfo, folderInfo);
                 
-
+                ReAssignFolderBack(profileInfo, folderInfo.Item1, folderInfo.Item2);
             }
             catch (Exception ex)
             {
                 Console.WriteLine("GENERAL ERROR: " + ex);
-                Console.WriteLine("\r\n*** For help go to https://BarRaider.github.io ***");
+                Console.WriteLine("\r\n*** For help go to https://BarRaider.com ***");
             }
         }
 
@@ -38,7 +52,7 @@ namespace streamdeck_foldereditor
             int? profileNum;
             int idx = 1;
             
-            var profiles = pe.GetProfiles().OrderBy(p => p.Name).ToList();
+            var profiles = pe.GetProfiles().Where(p => p.Version == "2.0").OrderBy(p => p.Name).ToList();
 
             if (profiles == null || profiles.Count == 0)
             {
@@ -48,7 +62,7 @@ namespace streamdeck_foldereditor
 
             foreach (var profile in profiles)
             {
-                Console.WriteLine($"[{idx}] {profile.Name}");
+                Console.WriteLine($"[{idx}] {profile.Name} ({profile.Pages.Pages.Count} pages)");
                 idx++;
             }
 
@@ -62,25 +76,50 @@ namespace streamdeck_foldereditor
             return profiles[profileNum.Value - 1];
         }
 
-        private static string GetFolderLocationToEdit(ProfileInfo profileInfo)
+        private static int? GetRequiredPageNum(ProfileInfo profileInfo)
+        {
+            Console.Write($"This profile has {profileInfo.Pages.Pages.Count} pages. Enter the number of the page that has the folder: ");
+            int? pageNum = SanitizeNumericInput(profileInfo.Pages.Pages.Count);
+            if (pageNum == null || !pageNum.HasValue)
+            {
+                return null;
+            }
+
+            return pageNum - 1;
+        }
+
+        
+        private static Tuple<string, string> GetFolderLocationToEdit(ProfileInfo profileInfo, int pageNum)
         {
             int idx = 1;
             int? folderNum;
-            var folders = pe.FindProfileFolderActions(profileInfo);
+            var pageFolderLocations = pe.FindProfileFolderActions(profileInfo, pageNum);
 
-            if (folders == null || folders.Count == 0)
+            if (pageFolderLocations == null || pageFolderLocations.Count == 0)
             {
                 Console.WriteLine("Profile does not have any top-level folders");
                 return null;
             }
 
             var streamDeckType = SDUtil.GetStreamDeckTypeFromProfile(profileInfo);
+
+            if (streamDeckType == StreamDeckType.CorsairGKeys || streamDeckType == StreamDeckType.CorsairCueSDK || streamDeckType == StreamDeckType.StreamDeckPedal)
+            {
+                Console.WriteLine("Folders are not supported on this device.");
+                return null;
+            }
+
+            if (streamDeckType == StreamDeckType.UNKNOWN)
+            {
+                Console.WriteLine("**** WARNING: Unrecognized Stream Deck type - It is NOT RECOMMENDED to continue ****");
+            }
+
             SDUtil.DisplayKeyLayout(streamDeckType);
 
             Console.WriteLine("\r\nFolders in profile:");
-            foreach (var location in folders)
+            foreach (var folder in pageFolderLocations)
             {
-                Console.WriteLine($"[{idx}]   Location: {location}");
+                Console.WriteLine($"[{idx}]   Location: {folder.FolderLocation}");
                 idx++;
             }
 
@@ -92,11 +131,23 @@ namespace streamdeck_foldereditor
             {
                 return null;
             }
+            string pageDirectory = Path.Combine(profileInfo.FullPath, ProfilesExplorer.PAGE_FOLDER_INTERNAL_SUFFIX, pageFolderLocations[folderNum.Value - 1].FolderProfilePath);
+            if (!Directory.Exists(pageDirectory))
+            {
+                pageDirectory += "Z";
 
-            return folders[folderNum.Value - 1];
+                if (!Directory.Exists(pageDirectory))
+                {
+                    Console.WriteLine("Page directory not found: " + pageDirectory);
+                    return null;
+                }
+            }
+
+            return new Tuple<string, string>(pageDirectory, pageFolderLocations[folderNum.Value - 1].FolderLocation);
         }
                 
-        private static void ReAssignFolderBack(ProfileInfo profileInfo, String folderLocation)
+        
+        private static void ReAssignFolderBack(ProfileInfo profileInfo, String pagePath, String folderLocation)
         {
             var streamDeckType = SDUtil.GetStreamDeckTypeFromProfile(profileInfo);
             SDUtil.DisplayKeyLayout(streamDeckType);
@@ -120,8 +171,9 @@ namespace streamdeck_foldereditor
             {
                 return;
             }
-            pe.MoveFolderBackLocation(profileInfo, folderLocation, $"{col.Value},{row.Value}");
+            pe.MoveFolderBackLocation(profileInfo, pagePath, folderLocation, $"{col.Value},{row.Value}");
         }
+        
 
         private static int? SanitizeNumericInput(int maxNum)
         {
