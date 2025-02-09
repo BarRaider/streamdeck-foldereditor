@@ -32,6 +32,7 @@ namespace streamdeck_foldereditor
                 case "20GAA9902":
                     return StreamDeckType.Classic;
                 case "20GAT9901":
+                case "20GAT9902":
                     return StreamDeckType.XL;
                 case "20GAI9901":
                     return StreamDeckType.Mini;
@@ -39,6 +40,8 @@ namespace streamdeck_foldereditor
                     return StreamDeckType.StreamDeckPlus;
                 case "20GBJ9901":
                     return StreamDeckType.StreamDeckNeo;
+                case "VSD/WiFi":
+                    return StreamDeckType.Mobile;
                 default:
                     return StreamDeckType.UNKNOWN;
             }
@@ -54,6 +57,7 @@ namespace streamdeck_foldereditor
                     return 3;
                 case StreamDeckType.CorsairGKeys:
                     return 1;
+                case StreamDeckType.Mobile:
                 case StreamDeckType.XL:
                     return 8;
                 case StreamDeckType.StreamDeckPlus:
@@ -74,6 +78,7 @@ namespace streamdeck_foldereditor
                     return 2;
                 case StreamDeckType.CorsairGKeys:
                     return 6;
+                case StreamDeckType.Mobile:
                 case StreamDeckType.XL:
                     return 4;
                 case StreamDeckType.StreamDeckPlus:
