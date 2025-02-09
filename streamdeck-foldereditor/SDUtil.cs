@@ -1,4 +1,5 @@
-﻿using System;
+﻿using streamdeck_foldereditor.Models;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -11,23 +12,35 @@ namespace streamdeck_foldereditor
         Classic = 0,
         Mini = 1,
         XL = 2,
-        App = 3
+        Mobile = 3,
+        CorsairGKeys = 4,
+        StreamDeckPedal = 5,
+        CorsairCueSDK = 6,
+        StreamDeckPlus = 7,
+        SCUFController = 8,
+        StreamDeckNeo = 9,
+        UNKNOWN = 999
     }
 
     internal static class SDUtil
     {
         public static StreamDeckType GetStreamDeckTypeFromProfile(ProfileInfo profileInfo)
         {
-            switch (profileInfo.DeviceModel)
+            switch (profileInfo.Device.Model)
             {
                 case "20GAA9901":
+                case "20GAA9902":
                     return StreamDeckType.Classic;
                 case "20GAT9901":
                     return StreamDeckType.XL;
                 case "20GAI9901":
                     return StreamDeckType.Mini;
+                case "20GBD9901":
+                    return StreamDeckType.StreamDeckPlus;
+                case "20GBJ9901":
+                    return StreamDeckType.StreamDeckNeo;
                 default:
-                    return StreamDeckType.App;
+                    return StreamDeckType.UNKNOWN;
             }
         }
 
@@ -35,12 +48,18 @@ namespace streamdeck_foldereditor
         {
             switch (streamDeckType)
             {
-                case (StreamDeckType.Classic):
+                case StreamDeckType.Classic:
                     return 5;
-                case (StreamDeckType.Mini):
+                case StreamDeckType.Mini:
                     return 3;
-                case (StreamDeckType.XL):
+                case StreamDeckType.CorsairGKeys:
+                    return 1;
+                case StreamDeckType.XL:
                     return 8;
+                case StreamDeckType.StreamDeckPlus:
+                    return 4;
+                case StreamDeckType.StreamDeckNeo:
+                    return 4;
             }
             return 0;
         }
@@ -49,12 +68,18 @@ namespace streamdeck_foldereditor
         {
             switch (streamDeckType)
             {
-                case (StreamDeckType.Classic):
+                case StreamDeckType.Classic:
                     return 3;
-                case (StreamDeckType.Mini):
+                case StreamDeckType.Mini:
                     return 2;
-                case (StreamDeckType.XL):
+                case StreamDeckType.CorsairGKeys:
+                    return 6;
+                case StreamDeckType.XL:
                     return 4;
+                case StreamDeckType.StreamDeckPlus:
+                    return 2;
+                case StreamDeckType.StreamDeckNeo:
+                    return 2;
             }
             return 0;
         }
