@@ -7,7 +7,7 @@ namespace streamdeck_foldereditor
 {
     class Program
     {
-        private const string VERSION = "2.0.1";
+        private const string VERSION = "2.1";
         private static readonly ProfilesExplorer pe = new ProfilesExplorer();
         static void Main(string[] args)
         {

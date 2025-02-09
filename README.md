@@ -6,9 +6,12 @@ Allows moving the *Back* action from the top-left in a Stream Deck Folder
 
 <img src="/_images/folder.jpg">
 
-### New in v2.0
-- Support for Stream Deck Plus / Stream Deck Neo
+### New in v2.1
 - Supports new 6.x profile structure
+- Support for Stream Deck Plus / Stream Deck Neo
+- Support for newer XL versions
+- Support for Stream Deck Mobile (behaves as XL)
+
 
 ### New in v1.2:
 - Support for Stream Deck XL
