@@ -4,9 +4,9 @@ using System;
 using System.Collections.Generic;
 using System.Text;
 
-namespace streamdeck_foldereditor
+namespace streamdeck_foldereditor.Models
 {
-    internal class ProfileAction
+    internal class PageAction
     {
         [JsonProperty]
         public string Name { get; set; }

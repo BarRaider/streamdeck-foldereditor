@@ -1,8 +1,10 @@
 ﻿using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
+using streamdeck_foldereditor.Models;
 using System;
 using System.Collections.Generic;
 using System.IO;
+using System.Linq;
 using System.Runtime.InteropServices;
 using System.Text;
 
@@ -14,6 +16,8 @@ namespace streamdeck_foldereditor
         private const string WIN_PROFILE_LOCATION = @"Elgato\StreamDeck\ProfilesV2";
         private const string MAC_PROFILE_LOCATION = @"~/Library/Application Support/com.elgato.StreamDeck/ProfilesV2";
         private const string FOLDER_UUID = "com.elgato.streamdeck.profile.openchild";
+        public const string PAGE_FOLDER_INTERNAL_SUFFIX = "Profiles";
+        private const string ACTION_SETTINGS_FOLDER_UUID = "ProfileUUID";
         private const string FOLDER_PLUGIN_SUFFIX = ".sdProfile";
 
         public List<ProfileInfo> GetProfiles()
@@ -64,60 +68,140 @@ namespace streamdeck_foldereditor
             return manifest.ToObject<ProfileInfo>();
         }
 
-        public List<string> FindProfileFolderActions(ProfileInfo profileInfo)
+        private Page FindPage(string directory, string pageUUID)
         {
-            List<string> folders = new List<string>();
-            foreach (string key in profileInfo.Actions.Keys)
+            if (!Directory.Exists(directory))
             {
-                if (profileInfo.Actions[key].UUID == FOLDER_UUID)
+                return null;
+            }
+
+            string pageDirectory = Path.Combine(directory, PAGE_FOLDER_INTERNAL_SUFFIX, ExtractPageDirectory(pageUUID));
+            if (!Directory.Exists(pageDirectory))
+            {
+                pageDirectory += "Z";
+
+                if (!Directory.Exists(pageDirectory))
                 {
-                    folders.Add(key);
+                    Console.WriteLine("Page directory not found: " + pageDirectory);
+                    return null;
                 }
             }
 
-            return folders;
-        }
-
-        public void MoveFolderBackLocation(ProfileInfo profileInfo, string folderLocation, string newLocation)
-        {
-            string folderGuid = GetFolderGuid(profileInfo, folderLocation);
-            if (String.IsNullOrWhiteSpace(folderGuid))
+            string manifestFile = Path.Combine(pageDirectory, MANINFEST_FILE);
+            if (!File.Exists(manifestFile))
             {
-                Console.WriteLine("Invalid profile folder found. Cannot continue");
-                return;
+                return null;
             }
 
-            string manifestFile = Path.Combine(profileInfo.FullPath, "Profiles", folderGuid , MANINFEST_FILE);
+            JObject manifest = JObject.Parse(File.ReadAllText(manifestFile));
+            Page page = manifest.ToObject<Page>();
+            page.FullPath = pageDirectory;
+
+            return page;
+        }
+
+        private string ExtractPageDirectory(string pageUUID)
+        {
+            pageUUID = pageUUID.Replace("-", "");
+            byte[] hexBytes = new byte[16];
+            int byteCounter = 0;
+            for (int idx = 0; idx < pageUUID.Length; idx += 2)
+            {
+                if (idx + 2 > pageUUID.Length)
+                {
+                    break;
+                }
+                var val = pageUUID.Substring(idx, 2);
+                byte b = Convert.ToByte(val, 16);
+                hexBytes[byteCounter] = b;
+                byteCounter++;
+
+            }
+            return FolderConverter.ToBase32String(hexBytes);
+        }
+
+        public List<PageFolderLocations> FindProfileFolderActions(ProfileInfo profileInfo, int pageNum)
+        {
+            if (profileInfo.Pages.Pages.Count <= pageNum)
+            {
+                Console.WriteLine("Invalid page number");
+                return null;
+            }
+
+            string pageUUID = profileInfo.Pages.Pages[pageNum];
+            Page page = FindPage(profileInfo.FullPath, pageUUID);
+
+            if (page == null)
+            {
+                Console.WriteLine("Failed to parse page");
+                return null;
+            }
+
+            PageInfo pageInfo = page.Controllers.Where(c => c.Type == "Keypad").FirstOrDefault();
+            if (pageInfo == null)
+            {
+                Console.WriteLine("Failed to parse page manifest");
+                return null;
+            }
+
+            List<PageFolderLocations> pageFolderLocations = new List<PageFolderLocations>();
+
+            foreach (var key in pageInfo.Actions.Keys)
+            {
+                if (pageInfo.Actions[key].UUID == FOLDER_UUID)
+                {
+                    string folderProfilePath = ExtractPageDirectory(pageInfo.Actions[key].Settings[ACTION_SETTINGS_FOLDER_UUID].Value<String>());
+                    pageFolderLocations.Add(new PageFolderLocations(key, folderProfilePath));
+                }
+            }
+            return pageFolderLocations;
+        }
+        
+
+        
+        public void MoveFolderBackLocation(ProfileInfo profileInfo, string pagePath, string folderLocation, string newLocation)
+        {
+            string manifestFile = Path.Combine(pagePath , MANINFEST_FILE);
             if (!File.Exists(manifestFile))
             {
                 throw new FileNotFoundException(manifestFile);
             }
 
             JObject manifest = JObject.Parse(File.ReadAllText(manifestFile));
-            if (manifest["Actions"][newLocation] == null) // New location doesn't have an existing key
+            bool found = false;
+            foreach (var controller in manifest["Controllers"])
             {
-                manifest["Actions"][newLocation] = manifest["Actions"]["0,0"];
-                manifest["Actions"]["0,0"]?.Parent?.Remove();
-            }
-            else // Does have an existing key, replace them
-            {
-                var currPos = manifest["Actions"][newLocation];
-                manifest["Actions"][newLocation] = manifest["Actions"]["0,0"];
-                manifest["Actions"]["0,0"] = currPos;
+                if (controller["Type"].Value<String>() != "Keypad")
+                {
+                    continue;
+                }
+
+                if (controller["Actions"][newLocation] == null) // New location doesn't have an existing key
+                {
+                    controller["Actions"][newLocation] = controller["Actions"]["0,0"];
+                    controller["Actions"]["0,0"]?.Parent?.Remove();
+                    found = true;
+                }
+                else // Does have an existing key, replace them
+                {
+                    var currPos = controller["Actions"][newLocation];
+                    controller["Actions"][newLocation] = controller["Actions"]["0,0"];
+                    controller["Actions"]["0,0"] = currPos;
+                    found = true;
+                }
             }
 
-            File.WriteAllText(manifestFile, manifest.ToString());
-            Console.WriteLine("Done! Please completely shut down the Stream Deck app and restart it to see the change");
-        }
-
-        private string GetFolderGuid(ProfileInfo profileInfo, string folderLocation)
-        {
-            try
+            if (found)
             {
-                return profileInfo.Actions[folderLocation].Settings["ProfileUUID"].Value<string>() + FOLDER_PLUGIN_SUFFIX;
+                File.WriteAllText(manifestFile, manifest.ToString());
+                Console.WriteLine("Done! Please restart the Stream Deck app to see the changes");
             }
-            catch { return null; }
+            else
+            {
+                Console.WriteLine("Error parsing manifest file. Could not move folder.");
+            }
         }
+       
 
         private string GetProfileDir()
         {

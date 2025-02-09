@@ -3,7 +3,7 @@ using System;
 using System.Collections.Generic;
 using System.Text;
 
-namespace streamdeck_foldereditor
+namespace streamdeck_foldereditor.Models
 {
     internal class ProfileInfo
     {
@@ -11,7 +11,7 @@ namespace streamdeck_foldereditor
         public string Name { get; set; }
 
         [JsonProperty]
-        public Dictionary<string, ProfileAction> Actions { get; set; }
+        public PagesOverview Pages { get; set; }
 
         [JsonIgnore]
         public string FullPath { get; set; }
@@ -20,9 +20,6 @@ namespace streamdeck_foldereditor
         public string Version { get; set; }
 
         [JsonProperty]
-        public string DeviceUUID { get; set; }
-
-        [JsonProperty]
-        public string DeviceModel { get; set; }
+        public Device Device { get; set; }
     }
 }
