@@ -7,7 +7,7 @@ namespace streamdeck_foldereditor
 {
     class Program
     {
-        private const string VERSION = "2.0";
+        private const string VERSION = "2.0.1";
         private static readonly ProfilesExplorer pe = new ProfilesExplorer();
         static void Main(string[] args)
         {
@@ -94,14 +94,14 @@ namespace streamdeck_foldereditor
             int idx = 1;
             int? folderNum;
             var pageFolderLocations = pe.FindProfileFolderActions(profileInfo, pageNum);
+            var streamDeckType = SDUtil.GetStreamDeckTypeFromProfile(profileInfo);
+            Console.WriteLine($"[DEBUG] Model: {profileInfo?.Device?.Model} Type: {streamDeckType.ToString()} Profile: {profileInfo.FullPath}");
 
             if (pageFolderLocations == null || pageFolderLocations.Count == 0)
             {
                 Console.WriteLine("Profile does not have any top-level folders");
                 return null;
             }
-
-            var streamDeckType = SDUtil.GetStreamDeckTypeFromProfile(profileInfo);
 
             if (streamDeckType == StreamDeckType.CorsairGKeys || streamDeckType == StreamDeckType.CorsairCueSDK || streamDeckType == StreamDeckType.StreamDeckPedal)
             {
