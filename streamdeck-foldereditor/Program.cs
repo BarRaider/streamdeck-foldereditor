@@ -111,7 +111,7 @@ namespace streamdeck_foldereditor
 
             if (streamDeckType == StreamDeckType.UNKNOWN)
             {
-                Console.WriteLine("**** WARNING: Unrecognized Stream Deck type - It is NOT RECOMMENDED to continue ****");
+                Console.WriteLine($"**** WARNING: Unrecognized Stream Deck type [{profileInfo?.Device?.Model}] - It is NOT RECOMMENDED to continue ****");
             }
 
             SDUtil.DisplayKeyLayout(streamDeckType);
