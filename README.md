@@ -2,7 +2,7 @@
 
 Allows moving the *Back* action from the top-left in a Stream Deck Folder
 
-**Author's website and contact information:** [https://barraider.github.io](https://barraider.github.io)
+**Author's website and contact information:** [https://barraider.com](https://barraider.com)
 
 <img src="/_images/folder.jpg">
 
