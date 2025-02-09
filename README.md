@@ -6,6 +6,10 @@ Allows moving the *Back* action from the top-left in a Stream Deck Folder
 
 <img src="/_images/folder.jpg">
 
+### New in v2.0
+- Support for Stream Deck Plus / Stream Deck Neo
+- Supports new 6.x profile structure
+
 ### New in v1.2:
 - Support for Stream Deck XL
 
@@ -28,11 +32,11 @@ Note: If there is already a key in that location, that key will move to the top-
 Download the app from here: https://github.com/BarRaider/streamdeck-foldereditor/releases
 
 ## Windows/Mac support
-This app can be compiled on both Windows and Mac. This app has been tested on Stream Deck v4.3.2 on Windows.  
+This app can be compiled on both Windows and Mac. This app has been tested on Stream Deck v6.8.1 on Windows.  
 **The Mac version has not been tested yet!**
 
 ## I found a bug, who do I contact?
-For support please contact the developer. Contact information is available at https://barraider.github.io
+For support please contact the developer. Contact information is available at https://barraider.com
 
 ## I have a feature request, who do I contact?
-Please contact the developer. Contact information is available at https://barraider.github.io
+Please contact the developer. Contact information is available at https://barraider.com
